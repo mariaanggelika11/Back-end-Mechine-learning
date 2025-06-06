@@ -18,7 +18,10 @@ const predictHandler = async (req, res, next) => {
     try {
       prediction = await runInference(imageBuffer);
     } catch (error) {
-      return next(new Error("Terjadi kesalahan dalam melakukan prediksi"));
+      return res.status(400).json({
+        status: "fail",
+        message: "Terjadi kesalahan dalam melakukan prediksi",
+      });
     }
 
     const result = prediction > 0.58 ? "Cancer" : "Non-cancer";
