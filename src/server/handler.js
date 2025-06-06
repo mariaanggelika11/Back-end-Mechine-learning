@@ -22,7 +22,7 @@ const predictHandler = async (req, res) => {
       });
     }
 
-    const result = prediction > 0.5 ? "Cancer" : "Non-cancer";
+    const result = prediction > 0.58 ? "Cancer" : "Non-cancer";
     const suggestion = result === "Cancer" ? "Segera periksa ke dokter!" : "Tetap jaga pola hidup sehat!";
 
     const id = uuidv4();
