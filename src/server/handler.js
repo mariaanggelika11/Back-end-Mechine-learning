@@ -6,7 +6,10 @@ const { getAllHistories } = require("../services/storeData");
 const predictHandler = async (req, res, next) => {
   try {
     if (!req.file) {
-      return next(new Error("No image uploaded"));
+      return res.status(400).json({
+        status: "fail",
+        message: "Tidak ada gambar yang diunggah",
+      });
     }
 
     const imageBuffer = req.file.buffer;
@@ -19,7 +22,7 @@ const predictHandler = async (req, res, next) => {
     }
 
     const result = prediction > 0.58 ? "Cancer" : "Non-cancer";
-    const suggestion = result === "Cancer" ? "Segera periksa ke dokter!" : "Tetap jaga pola hidup sehat!";
+    const suggestion = result === "Cancer" ? "Segera periksa ke dokter!" : "Penyakit kanker tidak terdeteksi.";
 
     const id = uuidv4();
     const createdAt = new Date().toISOString();
