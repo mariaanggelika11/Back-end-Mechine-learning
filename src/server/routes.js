@@ -14,7 +14,15 @@ const upload = multer({
   },
 });
 
-router.post("/predict", upload.single("image"), handler.predictHandler);
-router.get("/histories", handler.getHistoriesHandler);
+router.post("/predict", (req, res, next) => {
+  upload.single("image")(req, res, function (err) {
+    if (err) return next(err); // ✅ lempar ke global error handler
+    handler.predictHandler(req, res, next); // ✅ jalanin handler jika tidak error
+  });
+});
+
+router.get("/histories", (req, res, next) => {
+  handler.getHistoriesHandler(req, res, next);
+});
 
 module.exports = router;

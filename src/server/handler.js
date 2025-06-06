@@ -3,10 +3,10 @@ const { storeData } = require("../services/storeData");
 const { v4: uuidv4 } = require("uuid");
 const { getAllHistories } = require("../services/storeData");
 
-const predictHandler = async (req, res) => {
+const predictHandler = async (req, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ status: "fail", message: "No image uploaded" });
+      return next(new Error("No image uploaded"));
     }
 
     const imageBuffer = req.file.buffer;
@@ -15,11 +15,7 @@ const predictHandler = async (req, res) => {
     try {
       prediction = await runInference(imageBuffer);
     } catch (error) {
-      // Tangani error dari TensorFlow saat prediksi (misalnya shape tidak cocok)
-      return res.status(400).json({
-        status: "fail",
-        message: "Terjadi kesalahan dalam melakukan prediksi",
-      });
+      return next(new Error("Terjadi kesalahan dalam melakukan prediksi"));
     }
 
     const result = prediction > 0.58 ? "Cancer" : "Non-cancer";
@@ -27,18 +23,17 @@ const predictHandler = async (req, res) => {
 
     const id = uuidv4();
     const createdAt = new Date().toISOString();
-
     const data = { id, result, suggestion, createdAt };
+
     await storeData(data);
 
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       message: "Model is predicted successfully",
       data,
     });
   } catch (error) {
-    const status = error.statusCode || 500;
-    res.status(status).json({ status: "fail", message: error.message });
+    next(error); // lempar ke global error middleware
   }
 };
 const getHistoriesHandler = async (req, res) => {
