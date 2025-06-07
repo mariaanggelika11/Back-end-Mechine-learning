@@ -7,11 +7,25 @@ const { loadModel } = require("../services/loadModel");
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(cors());
+// ✅ Konfigurasi CORS secara eksplisit
+const corsOptions = {
+  origin: "https://astral-chassis-461908-e5.et.r.appspot.com", // Ganti dengan domain frontend Anda
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+};
+
+app.use(cors(corsOptions));
+
+// ✅ Tangani preflight (OPTIONS) requests
+app.options("*", cors(corsOptions));
+
+// Body parser
 app.use(express.json());
+
+// Routes
 app.use(routes);
 
-// 🔥 Tangani SEMUA error di sini
+// 🔥 Middleware error handler global
 app.use((err, req, res, next) => {
   if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(413).json({
@@ -33,6 +47,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Load model dan mulai server
 loadModel()
   .then(() => {
     app.listen(port, () => {
