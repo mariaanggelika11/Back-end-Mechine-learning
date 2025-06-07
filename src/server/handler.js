@@ -27,6 +27,14 @@ const predictHandler = async (req, res, next) => {
     const result = prediction > 0.58 ? "Cancer" : "Non-cancer";
     const suggestion = result === "Cancer" ? "Segera periksa ke dokter!" : "Penyakit kanker tidak terdeteksi.";
 
+    // ✅ Tambahkan validasi ini
+    if (!result || !suggestion) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Terjadi kesalahan dalam melakukan prediksi",
+      });
+    }
+
     const id = uuidv4();
     const createdAt = new Date().toISOString();
     const data = { id, result, suggestion, createdAt };
@@ -39,9 +47,13 @@ const predictHandler = async (req, res, next) => {
       data,
     });
   } catch (error) {
-    next(error); // lempar ke global error middleware
+    return res.status(400).json({
+      status: "fail",
+      message: "Terjadi kesalahan dalam melakukan prediksi",
+    });
   }
 };
+
 const getHistoriesHandler = async (req, res) => {
   try {
     const histories = await getAllHistories();
