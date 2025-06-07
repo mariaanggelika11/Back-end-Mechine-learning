@@ -7,25 +7,27 @@ const { loadModel } = require("../services/loadModel");
 const app = express();
 const port = process.env.PORT || 8080;
 
-// ✅ Konfigurasi CORS secara eksplisit
+// 🔧 Konfigurasi CORS
+const allowedOrigins = ["*", "http://astral-chassis-461908-e5.et.r.appspot.com", "https://astral-chassis-461908-e5.et.r.appspot.com"];
+
 const corsOptions = {
-  origin: "https://astral-chassis-461908-e5.et.r.appspot.com", // Ganti dengan domain frontend Anda
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false, // Ubah ke true jika kamu butuh kirim cookie/auth
 };
 
 app.use(cors(corsOptions));
-
-// ✅ Tangani preflight (OPTIONS) requests
-app.options("*", cors(corsOptions));
-
-// Body parser
 app.use(express.json());
-
-// Routes
 app.use(routes);
 
-// 🔥 Middleware error handler global
+// 🔥 Tangani SEMUA error di sini
 app.use((err, req, res, next) => {
   if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(413).json({
@@ -47,7 +49,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Load model dan mulai server
 loadModel()
   .then(() => {
     app.listen(port, () => {
