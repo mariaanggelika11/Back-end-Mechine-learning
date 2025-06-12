@@ -20,15 +20,18 @@ const corsOptions = {
   },
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false, // Ubah ke true jika kamu butuh kirim cookie/auth
+  credentials: false,
 };
 
+// Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(routes);
 
-// 🔥 Tangani SEMUA error di sini
+// 🛠️ Global Error Handler - CORS headers tetap dikirim
 app.use((err, req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
   if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(413).json({
       status: "fail",
@@ -43,12 +46,14 @@ app.use((err, req, res, next) => {
     });
   }
 
+  // Fallback Error
   return res.status(400).json({
     status: "fail",
     message: "Terjadi kesalahan dalam melakukan prediksi",
   });
 });
 
+// ✅ Jalankan server setelah model dimuat
 loadModel()
   .then(() => {
     app.listen(port, () => {
